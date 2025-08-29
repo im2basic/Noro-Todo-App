@@ -3,9 +3,9 @@ const prisma = new PrismaClient();
 
 async function main() {
     const allTasks = await prisma.task.findMany();
-    console.log(allTasks);
+    // console.log(allTasks);
     const task = await prisma.task.create({ data: { title: 'Test Task', color: 'blue', completed: true} })
-    console.log(task);
+    // console.log(task);
 
 }
 

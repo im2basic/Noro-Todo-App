@@ -25,8 +25,6 @@ router.post('/tasks', async (req, res) => {
 
 router.put("/tasks/:id", async (req, res) => {
     const { id } = req.params;
-    console.log('req.body:', req.body);
-    console.log('Content-Type:', req.headers['content-type']);
     const { title, color, completed } = req.body;
 
     const task = await prisma.task.update({
