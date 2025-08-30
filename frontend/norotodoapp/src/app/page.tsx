@@ -6,6 +6,7 @@ import ActionButton from '@/components/ActionButton';
 import EmptyState from '@/components/EmptyState';
 import { getTasks, deleteTask, updateTask } from '@/lib/api';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Task {
   id: number;
@@ -17,6 +18,7 @@ interface Task {
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetchTasks();
@@ -45,12 +47,21 @@ export default function Home() {
   };
 
   const handleDeleteTask = async (taskId: number) => {
+    const task = tasks.find(t => t.id === taskId);
+    const confirmed = window.confirm(`Are you sure you want to delete "${task?.title}"?`);
+    
+    if (!confirmed) return;
+
     try {
       await deleteTask(taskId);
       setTasks(tasks.filter(task => task.id !== taskId));
     } catch (error) {
       console.error('Error deleting task:', error);
     }
+  };
+
+  const handleTaskDoubleClick = (taskId: number) => {
+    router.push(`/tasks/${taskId}`);
   };
 
   const completedTasks = tasks.filter(task => task.completed).length;
@@ -83,7 +94,8 @@ export default function Home() {
             {tasks.map((task) => (
               <div 
                 key={task.id} 
-                className="bg-gray-800 p-4 rounded-lg flex items-center justify-between"
+                className="bg-gray-800 p-4 rounded-lg flex items-center justify-between cursor-pointer hover:bg-gray-700 transition-colors"
+                onDoubleClick={() => handleTaskDoubleClick(task.id)}
               >
                 <div className="flex items-center gap-3">
                   <input 
@@ -91,11 +103,15 @@ export default function Home() {
                     checked={task.completed}
                     onChange={(e) => handleToggleTask(task.id, e.target.checked)}
                     className="w-5 h-5"
+                    onClick={(e) => e.stopPropagation()}
                   />
                   <span className={task.completed ? 'line-through text-gray-500' : ''}>{task.title}</span>
                 </div>
                 <button
-                  onClick={() => handleDeleteTask(task.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteTask(task.id);
+                  }}
                   className="text-red-400 hover:text-red-300 p-1"
                   title="Delete task"
                 >
